@@ -8,7 +8,7 @@ This version primarily focuses on **video game discovery** using data from **IGD
 
 ## 🌐 Live Preview
 
-*(Optional: Add link here if deployed)*
+[Click here](https://wheretofind.vercel.app/)
 
 ---
 
