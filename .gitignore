@@ -1,0 +1,51 @@
+# Root ignores
+.DS_Store
+Thumbs.db
+*.log
+*.bak
+*.swp
+*.swo
+*.orig
+
+# Node (frontend)
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/pnpm-lock.yaml
+frontend/dist/
+frontend/build/
+
+# Python (backend)
+backend/__pycache__/
+backend/*.py[cod]
+backend/*.pyo
+backend/*.pyd
+backend/*.pyc
+backend/.env
+backend/.venv/
+backend/venv/
+backend/env/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.coverage
+backend/.DS_Store
+backend/*.sqlite3
+backend/*.db
+backend/instance/
+backend/*.egg-info/
+backend/build/
+backend/dist/
+backend/.coverage
+backend/.cache/
+backend/.tox/
+backend/.idea/
+backend/.vscode/
+backend/services/__pycache__
+# Global IDE settings
+.idea/
+.vscode/

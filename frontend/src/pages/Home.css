@@ -1,0 +1,34 @@
+.home-container {
+  padding: 30px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.hero h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.hero p {
+  font-size: 18px;
+  color: #4b5563;
+}
+
+.results {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.placeholder {
+  margin-top: 40px;
+  font-size: 16px;
+  color: #9ca3af;
+}
