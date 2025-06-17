@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000"; // adjust if using a different port
+const API_BASE_URL = "https://wheretofind.onrender.com"; 
 
 export const searchMedia = async (query, type) => {
   try {
