@@ -191,7 +191,7 @@ Returns:
 
 ## 📸 Screenshots
 
-*(Add screenshots of UI and results here)*
+![image](https://github.com/user-attachments/assets/f0ca43fa-555f-4673-af0f-b19a76f64dc4)
 
 ---
 
@@ -217,8 +217,8 @@ PRs welcome! Please fork the repo and submit a pull request for review.
 
 ## 📬 Contact
 
-Created by **Your Name**  
-Email: [your@email.com](mailto:your@email.com)
+Created by **Sayantan**  
+Email: [msayantan05@gmail.com](mailto:msayantan05@gmail.com)
 
 ---
 
