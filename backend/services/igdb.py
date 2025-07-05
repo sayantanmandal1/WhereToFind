@@ -82,11 +82,36 @@ async def get_game_data(title: str):
             # Get trailer (simplified)
             trailer_link = await fetch_best_youtube_trailer(game_title)
 
+            # Format image URL properly for IGDB
+            image_url = None
+            if game.get("cover"):
+                # IGDB returns URLs like: //images.igdb.com/igdb/image/upload/t_thumb/co1r7f.jpg
+                # We need to convert to: https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7f.jpg
+                cover_url = game['cover']['url']
+                print(f"Original IGDB cover URL: {cover_url}")  # Debug log
+                
+                if cover_url.startswith('//'):
+                    # Try different image sizes for best quality
+                    # t_cover_big = 264x374, t_cover_small = 90x128, t_thumb = 90x128
+                    # Use t_cover_big for best quality, fallback to original if needed
+                    if 't_thumb' in cover_url:
+                        image_url = cover_url.replace('t_thumb', 't_cover_big')
+                    elif 't_cover_small' in cover_url:
+                        image_url = cover_url.replace('t_cover_small', 't_cover_big')
+                    else:
+                        # If no size specified, add t_cover_big
+                        image_url = cover_url.replace('/upload/', '/upload/t_cover_big/')
+                    
+                    image_url = f"https:{image_url}"
+                    print(f"Formatted IGDB image URL: {image_url}")  # Debug log
+                else:
+                    image_url = f"https:{cover_url}"
+
             return {
                 "type": "game",
                 "title": game.get("name"),
                 "description": game.get("summary") or "No description available.",
-                "image": f"https:{game['cover']['url']}" if game.get("cover") else None,
+                "image": image_url,
                 "platforms": [p["name"] for p in game.get("platforms", [])],
                 "genres": [g["name"] for g in game.get("genres", [])],
                 "links": verified_links,
