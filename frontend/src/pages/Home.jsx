@@ -5,13 +5,11 @@ import ResultCard from "../components/ResultCard";
 import "./Home.css";
 
 const Home = () => {
-  const [query, setQuery] = useState("");
-  const [type, setType] = useState("movie");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSearch = async () => {
+  const handleSearch = async (query, type) => {
     if (!query.trim()) return;
     
     setLoading(true);
@@ -42,17 +40,25 @@ const Home = () => {
       </header>
 
       <SearchBar
-        query={query}
-        setQuery={setQuery}
-        type={type}
-        setType={setType}
         onSearch={handleSearch}
+        loading={loading}
       />
 
       <main className="results">
-        {loading && <p className="loading">Searching...</p>}
+        {loading && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p className="loading">Searching...</p>
+          </div>
+        )}
         {error && <p className="error">{error}</p>}
-        {result ? <ResultCard data={result} /> : !loading && !error && <p className="placeholder">Enter a title to get started.</p>}
+        {result ? <ResultCard data={result} /> : !loading && !error && (
+          <div className="placeholder-container">
+            <div className="placeholder-icon">🔍</div>
+            <p className="placeholder">Enter a title to get started</p>
+            <p className="placeholder-subtitle">Try searching for "Inception", "Minecraft", or "Harry Potter"</p>
+          </div>
+        )}
       </main>
     </div>
   );

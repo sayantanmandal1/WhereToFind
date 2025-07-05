@@ -75,8 +75,9 @@ async def get_game_data(title: str):
             game = results[0]
             game_title = game.get("name", title)
 
-            # Simplified store links without web scraping for speed
-            links = generate_store_links(game_title)
+            # Get verified store links
+            platforms = [p["name"] for p in game.get("platforms", [])] if game.get("platforms") else []
+            verified_links = await get_verified_store_links(game_title, platforms)
             
             # Get trailer (simplified)
             trailer_link = await fetch_best_youtube_trailer(game_title)
@@ -88,7 +89,7 @@ async def get_game_data(title: str):
                 "image": f"https:{game['cover']['url']}" if game.get("cover") else None,
                 "platforms": [p["name"] for p in game.get("platforms", [])],
                 "genres": [g["name"] for g in game.get("genres", [])],
-                "links": links,
+                "links": verified_links,
                 "trailer": trailer_link,
             }
     except Exception as e:
@@ -105,16 +106,146 @@ async def get_game_data(title: str):
         }
 
 
-def generate_store_links(game_title: str) -> List[dict]:
-    """Generate store links without web scraping for better performance"""
-    encoded = game_title.replace(" ", "+")
-    return [
-        {"platform": "Steam", "link": f"https://store.steampowered.com/search/?term={encoded}"},
-        {"platform": "Epic Games", "link": f"https://www.epicgames.com/store/en-US/browse?q={encoded}"},
-        {"platform": "GOG", "link": f"https://www.gog.com/en/games?search={encoded}"},
-        {"platform": "Microsoft Store", "link": f"https://www.microsoft.com/en-us/search/shop/games?q={encoded}"},
-        {"platform": "PlayStation Store", "link": f"https://store.playstation.com/en-us/search/{encoded}"},
-    ]
+async def get_verified_store_links(game_title: str, platforms: List[str] = None) -> List[dict]:
+    """Get verified store links by checking actual availability based on platforms"""
+    verified_links = []
+    
+    # Normalize platform names for easier matching
+    platform_names = [p.lower() for p in (platforms or [])]
+    
+    # Check if this is primarily a mobile game
+    is_mobile_game = any(mobile in platform_names for mobile in ['android', 'ios', 'mobile'])
+    is_pc_game = any(pc in platform_names for pc in ['pc', 'windows', 'mac', 'linux'])
+    is_console_game = any(console in platform_names for console in ['playstation', 'xbox', 'nintendo', 'switch'])
+    
+    # PC Store verification (only for PC games or games without platform info)
+    if is_pc_game or not platforms:
+        pc_store_configs = [
+            {
+                "name": "Steam",
+                "search_url": f"https://store.steampowered.com/search/?term={game_title.replace(' ', '%20')}",
+                "verify_selector": ".search_result_row",
+                "link_selector": ".search_result_row a[href*='/app/']"
+            },
+            {
+                "name": "Epic Games",
+                "search_url": f"https://store.epicgames.com/en-US/browse?q={game_title.replace(' ', '%20')}",
+                "verify_selector": "[data-testid='search-result']",
+                "link_selector": "[data-testid='search-result'] a"
+            },
+            {
+                "name": "GOG",
+                "search_url": f"https://www.gog.com/en/games?search={game_title.replace(' ', '%20')}",
+                "verify_selector": ".product-tile",
+                "link_selector": ".product-tile a"
+            }
+        ]
+        
+        for store in pc_store_configs:
+            try:
+                is_available = await verify_game_availability(
+                    store["search_url"], 
+                    store["verify_selector"],
+                    game_title
+                )
+                
+                verified_links.append({
+                    "platform": store["name"],
+                    "link": store["search_url"],
+                    "verified": is_available
+                })
+            except Exception as e:
+                print(f"Error checking {store['name']}: {e}")
+                verified_links.append({
+                    "platform": store["name"],
+                    "link": store["search_url"],
+                    "verified": False
+                })
+    
+    # Console Store verification (only for console games or games without platform info)
+    if is_console_game or not platforms:
+        console_stores = [
+            {"name": "Microsoft Store", "url": f"https://www.microsoft.com/en-us/search/shop/games?q={game_title.replace(' ', '+')}"},
+            {"name": "PlayStation Store", "url": f"https://store.playstation.com/en-us/search/{game_title.replace(' ', '%20')}"},
+            {"name": "Nintendo eShop", "url": f"https://www.nintendo.com/store/search/?q={game_title.replace(' ', '+')}"}
+        ]
+        
+        for store in console_stores:
+            verified_links.append({
+                "platform": store["name"],
+                "link": store["url"],
+                "verified": False  # Console stores are harder to verify, so mark as unverified
+            })
+    
+    # Mobile Store verification (only for mobile games or games without platform info)
+    if is_mobile_game or not platforms:
+        mobile_stores = [
+            {"name": "Google Play", "url": f"https://play.google.com/store/search?q={game_title.replace(' ', '+')}&c=apps"},
+            {"name": "App Store", "url": f"https://apps.apple.com/search?term={game_title.replace(' ', '+')}"}
+        ]
+        
+        for store in mobile_stores:
+            # For mobile games, we can be more confident about availability
+            # since mobile games are typically available on both stores
+            verified_links.append({
+                "platform": store["name"],
+                "link": store["url"],
+                "verified": is_mobile_game  # Mark as verified if we know it's a mobile game
+            })
+    
+    # If no platforms specified, add all stores as unverified
+    if not platforms:
+        # Add any missing stores that weren't covered above
+        all_stores = [
+            {"name": "Steam", "url": f"https://store.steampowered.com/search/?term={game_title.replace(' ', '%20')}"},
+            {"name": "Epic Games", "url": f"https://store.epicgames.com/en-US/browse?q={game_title.replace(' ', '%20')}"},
+            {"name": "GOG", "url": f"https://www.gog.com/en/games?search={game_title.replace(' ', '%20')}"},
+            {"name": "Microsoft Store", "url": f"https://www.microsoft.com/en-us/search/shop/games?q={game_title.replace(' ', '+')}"},
+            {"name": "PlayStation Store", "url": f"https://store.playstation.com/en-us/search/{game_title.replace(' ', '%20')}"},
+            {"name": "Nintendo eShop", "url": f"https://www.nintendo.com/store/search/?q={game_title.replace(' ', '+')}"}
+        ]
+        
+        # Only add stores that aren't already in verified_links
+        existing_stores = {link["platform"] for link in verified_links}
+        for store in all_stores:
+            if store["name"] not in existing_stores:
+                verified_links.append({
+                    "platform": store["name"],
+                    "link": store["url"],
+                    "verified": False
+                })
+    
+    return verified_links
+
+
+async def verify_game_availability(search_url: str, selector: str, game_title: str) -> bool:
+    """Verify if a game is actually available on a store"""
+    async with httpx.AsyncClient(timeout=5.0, follow_redirects=True) as client:
+        try:
+            response = await client.get(search_url)
+            soup = BeautifulSoup(response.text, "html.parser")
+            
+            # Look for search results
+            results = soup.select(selector)
+            
+            if not results:
+                return False
+            
+            # Check if any result matches the game title
+            for result in results[:5]:  # Check first 5 results
+                text = result.get_text(strip=True).lower()
+                title_lower = game_title.lower()
+                
+                # Use fuzzy matching to account for slight differences
+                similarity = fuzz.partial_ratio(title_lower, text)
+                if similarity > 70:  # 70% similarity threshold
+                    return True
+            
+            return False
+            
+        except Exception as e:
+            print(f"Error verifying availability: {e}")
+            return False
 
 
 async def fetch_best_youtube_trailer(title: str) -> Optional[str]:
