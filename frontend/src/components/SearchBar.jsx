@@ -17,7 +17,6 @@ const SearchBar = ({ query, setQuery, type, setType, onSearch }) => {
         value={type}
         onChange={(e) => setType(e.target.value)}
       >
-        <option value="auto">Auto</option>
         <option value="movie">Movie</option>
         <option value="game">Game</option>
         <option value="book">Book</option>

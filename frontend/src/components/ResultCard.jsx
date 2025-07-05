@@ -3,7 +3,8 @@ import "./ResultCard.css";
 
 const getYouTubeVideoId = (url) => {
   if (!url) return null;
-  const match = url.match(/(?:v=|\/embed\/|\.be\/)([^&\n?#]+)/);
+  // Handle both watch URLs and embed URLs
+  const match = url.match(/(?:v=|\/embed\/|\.be\/|youtu\.be\/)([^&\n?#]+)/);
   return match ? match[1] : null;
 };
 
@@ -14,18 +15,33 @@ const ResultCard = ({ data }) => {
     title,
     description,
     image,
+    poster,
     trailer,
     platforms,
     genres,
-    links
+    links,
+    stores
   } = data;
+
+  // Use poster if image is not available
+  const displayImage = image || poster;
+  
+  // Handle different data structures from different APIs
+  const displayLinks = links || stores || [];
+  const displayPlatforms = platforms || [];
+
+  // Get YouTube video ID for embedding
+  const youtubeVideoId = getYouTubeVideoId(trailer);
 
   return (
     <div className="result-card">
       <div className="result-image">
         <img
-          src={image && image.startsWith("http") ? image : "https://via.placeholder.com/300x450?text=No+Image"}
+          src={displayImage && displayImage.startsWith("http") ? displayImage : "https://placehold.co/300x450/cccccc/666666?text=No+Image"}
           alt={title}
+          onError={(e) => {
+            e.target.src = "https://placehold.co/300x450/cccccc/666666?text=No+Image";
+          }}
         />
       </div>
 
@@ -34,25 +50,30 @@ const ResultCard = ({ data }) => {
         <p className="genres">{genres?.join(", ")}</p>
         <p className="description">{description}</p>
 
-        {trailer && (
+        {youtubeVideoId && (
           <div className="trailer">
+            <h4>Trailer:</h4>
             <iframe
-              src={`https://www.youtube.com/embed/${getYouTubeVideoId(trailer)}`}
+              src={`https://www.youtube.com/embed/${youtubeVideoId}`}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               title="Trailer"
+              width="100%"
+              height="315"
             />
           </div>
         )}
 
         <div className="platforms">
-          {platforms && platforms.length > 0 && (
+          {displayPlatforms && displayPlatforms.length > 0 && (
             <>
               <h4>Available On:</h4>
               <ul>
-                {platforms.map((p, index) => (
-                  <li key={index}>{p}</li>
+                {displayPlatforms.map((platform, index) => (
+                  <li key={index}>
+                    {typeof platform === 'object' ? platform.platform : platform}
+                  </li>
                 ))}
               </ul>
             </>
@@ -60,17 +81,31 @@ const ResultCard = ({ data }) => {
         </div>
 
         <div className="links">
-          {links && links.length > 0 && (
+          {displayLinks && displayLinks.length > 0 && (
             <>
               <h4>Buy/Stream:</h4>
               <ul>
-                {links.map((l, index) => (
-                  <li key={index}>
-                    <a href={l.url} target="_blank" rel="noopener noreferrer">
-                      {l.name || l.url}
-                    </a>
-                  </li>
-                ))}
+                {displayLinks.map((link, index) => {
+                  // Handle different link formats
+                  if (typeof link === 'string') {
+                    return (
+                      <li key={index}>
+                        <a href={link} target="_blank" rel="noopener noreferrer">
+                          {link}
+                        </a>
+                      </li>
+                    );
+                  } else if (typeof link === 'object' && link.link) {
+                    return (
+                      <li key={index}>
+                        <a href={link.link} target="_blank" rel="noopener noreferrer">
+                          {link.platform || link.name || link.link}
+                        </a>
+                      </li>
+                    );
+                  }
+                  return null;
+                })}
               </ul>
             </>
           )}

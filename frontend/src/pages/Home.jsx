@@ -6,16 +6,32 @@ import "./Home.css";
 
 const Home = () => {
   const [query, setQuery] = useState("");
-  const [type, setType] = useState("auto");
+  const [type, setType] = useState("movie");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
+    
     setLoading(true);
-    const data = await searchMedia(query, type);
-    setResult(data || null);
-    setLoading(false);
+    setError(null);
+    setResult(null);
+    
+    try {
+      const response = await searchMedia(query, type);
+      // Handle the response structure from the backend
+      if (response && response.success && response.data) {
+        setResult(response.data);
+      } else {
+        setError("No results found. Try a different search term.");
+      }
+    } catch (error) {
+      console.error("Search failed:", error);
+      setError(error.message || "An error occurred while searching. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,8 +50,9 @@ const Home = () => {
       />
 
       <main className="results">
-        {loading && <p>Loading...</p>}
-        {result ? <ResultCard data={result} /> : <p className="placeholder">Enter a title to get started.</p>}
+        {loading && <p className="loading">Searching...</p>}
+        {error && <p className="error">{error}</p>}
+        {result ? <ResultCard data={result} /> : !loading && !error && <p className="placeholder">Enter a title to get started.</p>}
       </main>
     </div>
   );

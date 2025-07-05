@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from services.omdb import get_movie_data
+from services.tmdb import get_movie_data
 from services.igdb import get_game_data
 from services.books import get_book_data
 
@@ -17,23 +17,22 @@ app.add_middleware(
 )
 
 @app.get("/search")
-async def search(query: str = Query(...), type: str = Query("auto")):
+async def search(query: str = Query(...), type: str = Query("movie")):
     """Smart search endpoint. Auto-detects if not specified."""
-    if type == "movie":
-        return await get_movie_data(query)
-    elif type == "game":
-        return await get_game_data(query)
-    elif type == "book":
-        return await get_book_data(query)
-    else:
-        # Fallback auto-detect
-        movie = await get_movie_data(query)
-        if movie:
-            return movie
-        game = await get_game_data(query)
-        if game:
-            return game
-        return await get_book_data(query)
+    try:
+        if type == "movie":
+            data = await get_movie_data(query)
+        elif type == "game":
+            data = await get_game_data(query)
+        elif type == "book":
+            data = await get_book_data(query)
+        else:
+            # Fallback to movie search
+            data = await get_movie_data(query)
+        
+        return {"success": bool(data), "data": data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @app.get("/")

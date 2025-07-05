@@ -1,225 +1,146 @@
 
-# WhereToFind 🎮📚🎬
+# WhereToFind - Full Stack Media Search Application
 
-WhereToFind is a full-stack web application that helps users find **where to watch, buy, or stream** their favorite **games, movies, or books** — all through legal platforms.  
-This version primarily focuses on **video game discovery** using data from **IGDB (via Twitch API)** and YouTube for trailers.
+A full-stack web application that helps users find where to watch movies, play games, or read books legally. The application searches across multiple platforms and provides direct links to streaming services and stores.
 
----
+## Features
 
-## 🌐 Live Preview
+- **Multi-platform Search**: Search for movies, games, and books
+- **Streaming Links**: Direct links to Netflix, Prime Video, Apple TV, and more
+- **YouTube Trailers**: Embedded YouTube trailers for movies and games
+- **Responsive Design**: Works on desktop and mobile devices
+- **Real-time Search**: Fast search results with loading states
 
-[Click here](https://wheretofind.vercel.app/)
-
----
-
-## 📦 Features
-
-- 🔎 Search any game title.
-- 🧠 Retrieves metadata (summary, genres, platforms).
-- 🖼️ Displays official game covers.
-- 🎥 Embeds the best YouTube trailer.
-- 🛍️ Crawls multiple stores to find where to buy or download.
-- 💡 Clean and responsive UI.
-
----
-
-## 🖥️ Tech Stack
+## Tech Stack
 
 ### Frontend
-- React (with functional components)
-- CSS Modules
+- React.js
+- CSS3
+- Axios for API calls
 
 ### Backend
-- Python 3.10+
-- FastAPI or Flask (compatible)
-- IGDB API (via Twitch)
-- YouTube scraping with `httpx` and `BeautifulSoup`
-- Store link scraping from major platforms
+- FastAPI (Python)
+- TMDB API for movies and TV shows
+- IGDB API for games
+- Google Books API for books
+- BeautifulSoup for web scraping
 
----
+## Setup Instructions
 
-## 📁 Project Structure
+### Prerequisites
+- Node.js (v14 or higher)
+- Python (v3.8 or higher)
+- pip (Python package manager)
+
+### Backend Setup
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Create a virtual environment:
+   ```bash
+   python -m venv venv
+   ```
+
+3. Activate the virtual environment:
+   - Windows: `venv\Scripts\activate`
+   - macOS/Linux: `source venv/bin/activate`
+
+4. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. Set up environment variables (optional):
+   Create a `.env` file in the backend directory with:
+   ```
+   TMDB_API_KEY=your_tmdb_api_key_here
+   TWITCH_CLIENT_ID=your_twitch_client_id_here
+   TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
+   ```
+
+6. Start the backend server:
+   ```bash
+   python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+The backend will be available at `http://localhost:8000`
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm start
+   ```
+
+The frontend will be available at `http://localhost:3000`
+
+## API Keys (Optional)
+
+For full functionality, you can obtain API keys from:
+
+- **TMDB API**: https://www.themoviedb.org/settings/api (for movies and TV shows)
+- **Twitch API**: https://dev.twitch.tv/console (for IGDB games database)
+
+Without these keys, the application will still work but with limited functionality.
+
+## Usage
+
+1. Open the application in your browser
+2. Select the type of media (Movie or Game)
+3. Enter the title you want to search for
+4. Click "Search" to find results
+5. View streaming platforms, trailers, and purchase links
+
+## Project Structure
 
 ```
-/frontend
-  /components
-    SearchBar.jsx
-    ResultCard.jsx
-  /pages
-    Home.jsx
-  /api.js
-  /App.jsx
-  /index.js
-
-/backend
-  main.py
-  utils.py
-  .env
-  requirements.txt
-
-README.md
+WhereToFind/
+├── backend/
+│   ├── main.py              # FastAPI application
+│   ├── requirements.txt     # Python dependencies
+│   └── services/
+│       ├── tmdb.py         # Movie/TV show service
+│       ├── igdb.py         # Game service
+│       └── books.py        # Book service
+├── frontend/
+│   ├── src/
+│   │   ├── App.js          # Main React component
+│   │   ├── api.js          # API client
+│   │   ├── components/     # React components
+│   │   └── pages/          # Page components
+│   └── package.json        # Node.js dependencies
+└── README.md
 ```
 
----
+## Deployment
 
-## 🧪 Prerequisites
+### Backend Deployment
+The backend is configured for deployment on Render.com with the provided Dockerfile.
 
-- Node.js (v18+)
-- Python 3.10+
-- Twitch account with dev credentials
-- Git
+### Frontend Deployment
+The frontend can be deployed to any static hosting service like Netlify, Vercel, or GitHub Pages.
 
----
+## Contributing
 
-## 🛠️ Installation
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-### 1. Clone the repository
+## License
 
-```bash
-git clone https://github.com/yourusername/wheretofind.git
-cd wheretofind
-```
-
----
-
-### 2. Backend Setup
-
-#### 📁 Navigate to backend:
-
-```bash
-cd backend
-```
-
-#### 📦 Create virtual environment and install dependencies:
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-#### 📄 Create a `.env` file:
-
-```
-TWITCH_CLIENT_ID=your_client_id
-TWITCH_CLIENT_SECRET=your_client_secret
-```
-
-You can obtain these from [Twitch Developer Console](https://dev.twitch.tv/console/apps).
-
----
-
-### 3. Start the Backend Server
-
-Using FastAPI:
-
-```bash
-uvicorn main:app --reload
-```
-
-It should be running at `http://127.0.0.1:8000`.
-
----
-
-### 4. Frontend Setup
-
-#### 📁 Navigate to frontend:
-
-```bash
-cd ../frontend
-```
-
-#### Install dependencies:
-
-```bash
-npm install
-```
-
-#### Start React app:
-
-```bash
-npm start
-```
-
-It runs by default on `http://localhost:3000`.
-
----
-
-## 🔗 Supported Store Platforms
-
-- Steam
-- Epic Games
-- Ubisoft Store
-- GOG
-- Microsoft Store
-- PlayStation Store
-- Humble Bundle
-
----
-
-## 🔒 Environment Variables
-
-### Backend `.env`
-
-```env
-TWITCH_CLIENT_ID=your_twitch_client_id
-TWITCH_CLIENT_SECRET=your_twitch_client_secret
-```
-
----
-
-## 📤 API Endpoint
-
-### `GET /search?query=your_game&type=game`
-
-Returns:
-
-```json
-{
-  "type": "game",
-  "title": "Cyberpunk 2077",
-  "description": "Futuristic open-world RPG...",
-  "image": "https://cdn.igdb.com/...",
-  "trailer": "https://www.youtube.com/embed/abc123",
-  "platforms": ["PC", "Xbox One"],
-  "genres": ["RPG", "Action"],
-  "stores": ["https://store.steampowered.com/app/1091500/"]
-}
-```
-
----
-
-## 📸 Screenshots
-
-![image](https://github.com/user-attachments/assets/f0ca43fa-555f-4673-af0f-b19a76f64dc4)
-
----
-
-## 🐞 Troubleshooting
-
-- **No results:** Ensure your Twitch credentials are correct.
-- **Images not loading:** Check if the `image` field is mapped correctly in frontend.
-- **YouTube trailer not showing:** Some browsers/extensions block embedded content. Try disabling ad blockers.
-
----
-
-## 📃 License
-
-MIT License. Use freely with attribution.
-
----
-
-## 🤝 Contributing
-
-PRs welcome! Please fork the repo and submit a pull request for review.
-
----
-
-## 📬 Contact
-
-Created by **Sayantan**  
-Email: [msayantan05@gmail.com](mailto:msayantan05@gmail.com)
-
----
-
-Happy Searching 🎮🎬📚
+This project is open source and available under the MIT License.

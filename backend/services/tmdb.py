@@ -12,40 +12,65 @@ TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p"
 def extract_trailer(videos):
     for video in videos.get("results", []):
         if "Trailer" in video.get("name", "") and video.get("site") == "YouTube":
-            return f"https://www.youtube.com/embed/{video['key']}"
+            return f"https://www.youtube.com/watch?v={video['key']}"
     return None
 
 async def get_movie_data(title: str):
-    async with httpx.AsyncClient() as client:
-        # Step 1: Search for the movie/show
-        search_resp = await client.get(f"{TMDB_BASE_URL}/search/multi", params={
-            "api_key": TMDB_API_KEY,
-            "query": title,
-        })
-        search_results = search_resp.json().get("results")
-        if not search_results:
-            return None
-
-        best_match = search_results[0]
-        media_type = best_match["media_type"]
-        media_id = best_match["id"]
-
-        # Step 2: Get details (with videos and images)
-        detail_resp = await client.get(
-            f"{TMDB_BASE_URL}/{media_type}/{media_id}",
-            params={"api_key": TMDB_API_KEY, "append_to_response": "videos,images"}
-        )
-        detail = detail_resp.json()
-
+    if not TMDB_API_KEY:
         return {
-            "type": media_type,
-            "title": detail.get("title") or detail.get("name"),
-            "description": detail.get("overview"),
-            "poster": f"{TMDB_IMAGE_BASE}/w500{detail.get('poster_path')}" if detail.get("poster_path") else None,
-            "backdrop": f"{TMDB_IMAGE_BASE}/original{detail.get('backdrop_path')}" if detail.get("backdrop_path") else None,
-            "trailer": extract_trailer(detail.get("videos", {})),
-            "platforms": suggest_platforms(title),
+            "type": "movie",
+            "title": title,
+            "description": "TMDB API key not configured",
+            "image": None,
+            "trailer": None,
+            "platforms": [],
+            "genres": [],
+            "links": []
         }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            # Step 1: Search for the movie/show
+            search_resp = await client.get(f"{TMDB_BASE_URL}/search/multi", params={
+                "api_key": TMDB_API_KEY,
+                "query": title,
+            })
+            search_results = search_resp.json().get("results")
+            if not search_results:
+                return None
+
+            best_match = search_results[0]
+            media_type = best_match["media_type"]
+            media_id = best_match["id"]
+
+            # Step 2: Get details (with videos and images)
+            detail_resp = await client.get(
+                f"{TMDB_BASE_URL}/{media_type}/{media_id}",
+                params={"api_key": TMDB_API_KEY, "append_to_response": "videos,images"}
+            )
+            detail = detail_resp.json()
+
+            # Get genres
+            genres = []
+            if detail.get("genres"):
+                genres = [genre["name"] for genre in detail["genres"]]
+
+            # Get platforms/streaming info
+            platforms = suggest_platforms(title)
+
+            return {
+                "type": media_type,
+                "title": detail.get("title") or detail.get("name"),
+                "description": detail.get("overview") or "No description available.",
+                "image": f"{TMDB_IMAGE_BASE}/w500{detail.get('poster_path')}" if detail.get("poster_path") else None,
+                "trailer": extract_trailer(detail.get("videos", {})),
+                "platforms": [p["platform"] for p in platforms],
+                "genres": genres,
+                "links": platforms
+            }
+        except Exception as e:
+            print(f"Error fetching movie data: {e}")
+            return None
 
 def suggest_platforms(title: str):
     # These are example fallback links. You could scrape or use an unofficial JustWatch API if needed.
