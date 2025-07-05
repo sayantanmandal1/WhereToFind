@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { searchMedia } from "../api";
 import SearchBar from "../components/SearchBar";
 import ResultCard from "../components/ResultCard";
+import SocialShare from "../components/SocialShare";
+import TrendingSection from "../components/TrendingSection";
+import ReviewSystem from "../components/ReviewSystem";
 import "./Home.css";
 
 const Home = () => {
@@ -69,6 +72,10 @@ const Home = () => {
     window.history.pushState({}, '', '/');
   };
 
+  const handleTrendingSelect = (title, type) => {
+    handleSearch(title, type);
+  };
+
   return (
     <div className="home-container">
       <header className="hero">
@@ -97,6 +104,11 @@ const Home = () => {
         loading={loading}
       />
 
+      {/* Trending Section */}
+      {!result && !loading && !error && (
+        <TrendingSection onSearchSelect={handleTrendingSelect} />
+      )}
+
       <main className="results">
         {loading && (
           <div className="loading-container">
@@ -124,6 +136,16 @@ const Home = () => {
               </button>
             </div>
             <ResultCard data={result} />
+            
+            {/* Social Share Section */}
+            <SocialShare media={result} searchQuery={searchParams?.query} />
+            
+            {/* Review System */}
+            <ReviewSystem 
+              mediaId={result?.id || result?.title} 
+              mediaType={searchParams?.type} 
+              mediaTitle={result?.title} 
+            />
           </div>
         ) : !loading && !error && (
           <div className="placeholder-container">
